@@ -5,7 +5,17 @@ from discord.ext import commands
 bot = commands.Bot(command_prefix='/', intents = discord.Intents.all())
 
 class Pet:
-    def __init__(self, health, damage, stamina, defense, coins, minlvl, maxlvl, floor):
+    def __init__(
+        self,
+        damage: int = 2, 
+        health: int = 100, 
+        stamina: int = 100, 
+        defense: int = 1,
+        coins: int = 0,
+        minlvl: int = 1,
+        maxlvl: int = 5,
+        floor: int = 1 
+     ):
         self.damage = damage
         self.max_health, self.health = health, health
         self.max_stamina, self.stamina = stamina, stamina
@@ -22,11 +32,11 @@ class Pet:
 
     def can_attack(self) -> bool:
         return self.stamina >= 60
-    def attack(self):
+    def attack(self, target_pet):
         self.stamina -= 60
-        damage_dealt = self.damage - Enemy.defense
+        damage_dealt = self.damage - target_pet.defense
         damage_dealt = damage_dealt if damage_dealt > 0 else 0
-        Enemy.health -= damage_dealt
+        target_pet.health -= damage_dealt
 
 
     def can_feed(self) -> bool:
@@ -48,53 +58,53 @@ class Pet:
         self.stamina -= 40
         self.damage += 2
 
-pet = Pet(100, 2, 100, 1, 0, 1, 10, 1)
+pet = Pet()
 class Enemy:
-    def __init__(self):
-        self.damage = random.randint(Pet.minlvl, Pet.maxlvl)
+    def __init__(self, target_pet):
+        self.damage = random.randint(target_pet.minlvl, target_pet.maxlvl)
         self.max_health, self.health = random.randint(50, 100)
-        self.defense = random.randint(Pet.floor, Pet. minlvl)
+        self.defense = random.randint(target_pet.floor, target_pet. minlvl)
 
     def __repr__(self) -> str:
         return (f'<Здоровье врага {self.health}/{self.max_health}, '
                 f'сила врага {self.damage}, защита врага {self.defense}>')
-    def attack(self):
-        damage_dealt = self.damage - Pet.defense
+    def attack(self, target_pet):
+        damage_dealt = self.damage - target_pet.defense
         damage_dealt = damage_dealt if damage_dealt > 0 else 0
-        Pet.health -= damage_dealt
+        target_pet.health -= damage_dealt
 
 @bot.command('train')
-async def train(self, message):
-    if not self.Pet.can_train():
+async def train(message):
+    if not pet.can_train():
         await message.send('сперва вашему питомцу следует восстановить силы')
         return
     await message.send('питомец прошёл изнурительные тренеровки')
-    self.Pet.train()
+    pet.train()
     await message.send(pet)
     return
         
 @bot.command('feed')
-async def feed(self, message):
-    if not self.Pet.can_feed():
+async def feed(message):
+    if not pet.can_feed():
         await message.send('Ваш питомец не голоден')
         return
     await message.send('питомец сытно поел')
-    Pet.feed()
+    pet.feed()
     await message.send(pet)
     return
 @bot.command('sleep')
-async def sleep(self, message):
-    if not self.Pet.can_sleep():
+async def sleep(message):
+    if not pet.can_sleep():
         await message.send('Ваш питомец ещё не устал')
         return
     await message.send('питомец выспался')
-    Pet.sleep()
+    pet.sleep()
     await message.send(pet)
     return
 
 @bot.command('attack')
-async def attack(self, message):
-    if not self.Pet.can_train():
+async def attack(message):
+    if not pet.can_train():
         await message.send('сперва вашему питомцу следует восстановить силы')
         return
     enemy = Enemy()
@@ -110,12 +120,12 @@ async def attack(self, message):
             return
 
         if not enemy:
-            Pet.coins += 100
-            Pet.minlvl += 2
-            Pet.maxlvl += 2
-            Pet.floor += 1
+            pet.coins += 100
+            pet.minlvl += 2
+            pet.maxlvl += 2
+            pet.floor += 1
             await message.send('вы выиграли. противник стал посильнее.\n'
                                'вы заработали 100 монет\n'
-                               f'итого монет: {Pet.coins}')
+                               f'итого монет: {pet.coins}')
             return       
 bot.run('')
