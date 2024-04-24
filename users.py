@@ -1,5 +1,6 @@
 from pets import Enemy, Pet
 from copy import deepcopy
+from discord import Interaction
 class User:
     def __init__(self, user_id: int, user_nickname: str):
         self.user_id = user_id
@@ -12,69 +13,68 @@ class User:
                 f'    | ID: {self.user_id}\n'
                 f'    | Coins: {self.coins}\n'
                 f'    | Pet: {self.pet}')
-
-
-    async def train(self, message):
+    
+    async def train(self, interaction: Interaction ):
         if not self.pet.can_train():
-            await message.send('сперва вашему питомцу следует восстановить силы')
+            await interaction.response.send_message('сперва вашему питомцу следует восстановить силы')
             return
-        await message.send('питомец прошёл изнурительные тренеровки')
+        await interaction.response.send_message('питомец прошёл изнурительные тренеровки')
         self.pet.train()
-        await message.send(self.pet)
+        await interaction.response.send_message(self.pet)
         return
 
-    async def feed(self, message):
+    async def feed(self, interaction: Interaction ):
         if not self.pet.can_feed():
-            await message.send('Ваш питомец не голоден')
+            await interaction.response.send_message('Ваш питомец не голоден')
             return
-        await message.send('питомец сытно поел')
+        await interaction.response.send_message('питомец сытно поел')
         self.pet.feed()
-        await message.send(self.pet)
+        await interaction.response.send_message(self.pet)
         return
 
-    async def attack(self, message):
+    async def attack(self, interaction: Interaction ):
         if not self.pet.can_train():
-            await message.send('сперва вашему питомцу следует восстановить силы')
+            await interaction.response.send_message('сперва вашему питомцу следует восстановить силы')
             return
         enemy = Enemy(target_pet=self.pet)
-        await message.send('вы атакуете врага')
+        await interaction.response.send_message('вы атакуете врага')
         self.pet.stamina -= 60
         while True:
             enemy.attack(target_pet=self.pet)
             self.pet.attack(target_pet=enemy)
-            await message.send(f'ваш питомец: {self.pet}\n'
+            await interaction.response.send_message(f'ваш питомец: {self.pet}\n'
                             f'ваш враг: {enemy}')
 
-            if not self.pet():
-                await message.send('вы проиграли!')
+            if not self.pet:
+                await interaction.response.send_message('вы проиграли!')
                 return
 
-            if not enemy():
+            if not enemy:
                 self.coins += 100
                 self.pet.minlvl += 2
                 self.pet.maxlvl += 2
                 self.pet.floor += 1
-                await message.send('вы выиграли. противник стал посильнее.\n'
+                await interaction.response.send_message('вы выиграли. противник стал посильнее.\n'
                                 'вы заработали 100 монет\n'
                                 f'итого монет: {self.pet.coins}')
                 return       
-    async def sleep(self, message):
+    async def sleep(self, interaction: Interaction ):
         if not self.pet.can_sleep():
-            await message.send('Ваш питомец ещё не устал')
+            await interaction.response.send_message('Ваш питомец ещё не устал')
             return
-        await message.send('питомец выспался')
+        await interaction.response.send_message('питомец выспался')
         self.pet.sleep()
-        await message.send(self.pet)
+        await interaction.response.send_message(self.pet)
         return
-    async def shop(self, message, item):
-        await message.send('item=1;  400 монет')   
-        await message.send('item=2;  800 монет') 
-        await message.send('item=3;  1200 монет')
-        await message.send('item=4;  1600 монет')
-        await message.send('item=5;  2000 монет')
+    async def shop(self, interaction: Interaction, item ):
+        await interaction.response.send_message('item=1;  400 монет')   
+        await interaction.response.send_message('item=2;  800 монет') 
+        await interaction.response.send_message('item=3;  1200 монет')
+        await interaction.response.send_message('item=4;  1600 монет')
+        await interaction.response.send_message('item=5;  2000 монет')
 
         if item not in ('1', '2', '3', '4', '5'):
-            await message.send('Неправильный item, выберите из списка (1 2 3 4 5)')
+            await interaction.response.send_message('Неправильный item, выберите из списка (1 2 3 4 5)')
             return
 
         shop_pets = {
@@ -86,9 +86,9 @@ class User:
         }
 
         if self.coins < shop_pets[item].shop_cost:
-            await message.send(f'Недостаточно денег: чтобы купить этого пета, нужно {shop_pets[item].shop_cost} денег')
+            await interaction.response.send_message(f'Недостаточно денег: чтобы купить этого пета, нужно {shop_pets[item].shop_cost} денег')
             return
 
         self.coins -= shop_pets[item].shop_cost
         self.pet = deepcopy(shop_pets[item])
-        await message.send(f'Ваш новый пет: {self.pet}')
+        await interaction.response.send_message(f'Ваш новый пет: {self.pet}')
