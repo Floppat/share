@@ -1,5 +1,4 @@
 import discord
-from pets import Pet, Enemy
 from discord.ext import commands
 from users import User
 
@@ -12,83 +11,81 @@ def get_user(user_id: int) -> User | None:
             return user
     return None
 
-@bot.command('guide')
-async def guide(message):
-    await message.send('каждый день (до использования команды /sleep) вы можете 2 раза потренироватся, затем 1 раз поесть.')
-    await message.send('за день можно 2 раза потренироватся, или 1 раз потренироватся и 1 раз подратся')
-    await message.send('совет: лучше перед боем не тренероватся, ведь будет меньше здоровья, а поесть вы не сможете')
-    await message.send('тактика про: каждый день 2 раза тренироваться и 1 раз есть, после того как набралось 10 атаки на следущий день идти в бой')
-    await message.send('также противник сильнеет не по дням, а по боям, так что покупайте артефакты, ведь они повышают защиту')
+@bot.event
+async def on_ready():
+    print(f'Бот {bot.user.name} готов.')
+    synced = await bot.tree.sync()
+    print(f'{len(synced)} / команды доступны.')
 
-@bot.command('cmd')
-async def cmd(message):
-    await message.send('попробуйте /train  (+сила; -здоровье; -выносливость)')
-    await message.send('попробуйте /feed  (+здоровье; +выносливость)')
-    await message.send('попробуйте /attack  (-здоровье (ведь это же битва))')
-    await message.send('попробуйте /sleep  (полное восстановление выносливости)')
-    await message.send('попробуйте /cmd')
-    await message.send('попробуйте /guide  (ввод в игру)')
-    await message.send('попробуйте /shop  (покупка артефактов)')
+@bot.tree.command(name='guide', description='Отображает справку по игре')
+async def guide(interaction: discord.Interaction):
+    message =  ('каждый день (до использования команды /sleep) вы можете 2 раза потренироватся, затем 1 раз поесть.\n'
+                'за день можно 2 раза потренироватся, или 1 раз потренироватся и 1 раз подратся\n'
+                'совет: лучше перед боем не тренероватся, ведь будет меньше здоровья, а поесть вы не сможете\n'
+                'тактика про: каждый день 2 раза тренироваться и 1 раз есть, после того как набралось 10 атаки на следущий день идти в бой\n' 
+                'также противник сильнеет не по дням, а по боям, так что покупайте артефакты, ведь они повышают защиту\n')
+    await interaction.response.send_message(message)
 
-@bot.command('register')
-async def register(message, nickname):
-    if get_user(user_id=message.author.id):
-        await message.send('Вы уже зарегистрированы')
+@bot.tree.command(name='cmd', description='Отображает команды бота')
+async def guide(interaction: discord.Interaction):
+    message = ('попробуйте /register   (после регистрации доступны все команды)\n'
+    'попробуйте /guide  (ввод в игру)\n'
+    'попробуйте /train  (+сила; -здоровье; -выносливость)\n'
+    'попробуйте /feed  (+здоровье; +выносливость)\n'
+    'попробуйте /sleep  (полное восстановление выносливости)\n'
+    'попробуйте /attack  (-здоровье (ведь это же битва))\n'
+    'попробуйте /shop  (покупка артефактов)\n'
+    'попробуйте /cmd\n')
+    await interaction.response.send_message(message)
+
+@bot.tree.command(name='register', description='Позволяет зарегистрироваться в игре')
+async def register(interaction: discord.Interaction, nickname: str):
+    if get_user(user_id=interaction.user.id):
+        await interaction.response.send_message('Вы уже зарегистрированы')
         return
-
     users_database.append(
-        User(user_id=message.author.id, user_nickname=nickname)
+        User(user_id=interaction.user.id, user_nickname=nickname)
     )
-    await message.send('Регистрация прошла успешно')
+    await interaction.response.send_message('Регистрация прошла успешно')
 
-@bot.command('train')
-async def train(message):
-    user = get_user(user_id=message.author.id)
-
+@bot.tree.command(name='train', description='Потренируйте питомца!')
+async def register(interaction: discord.Interaction):
+    user = get_user(user_id=interaction.user.id)
     if not user:
-        await message.send('Вы не зарегистрированы, поэтому не можете использовать эту команду.')
+        await interaction.response.send_message('Вы не зарегистрированы, поэтому не можете использовать эту команду.')
         return
+    await user.train(interaction=interaction)
 
-    await user.train(message=message)
-
-@bot.command('feed')
-async def feed(message):
-    user = get_user(user_id=message.author.id)
-
+@bot.tree.command(name='feed', description='Покормите питомца!')
+async def register(interaction: discord.Interaction):
+    user = get_user(user_id=interaction.user.id)
     if not user:
-        await message.send('Вы не зарегистрированы, поэтому не можете использовать эту команду.')
+        await interaction.response.send_message('Вы не зарегистрированы, поэтому не можете использовать эту команду.')
         return
+    await user.feed(interaction=interaction)
 
-    await user.feed(message=message)
-
-@bot.command('attack')
-async def attack(message):
-    user = get_user(user_id=message.author.id)
-
+@bot.tree.command(name='attack', description='Покормите питомца!')
+async def register(interaction: discord.Interaction):
+    user = get_user(user_id=interaction.user.id)
     if not user:
-        await message.send('Вы не зарегистрированы, поэтому не можете использовать эту команду.')
+        await interaction.response.send_message('Вы не зарегистрированы, поэтому не можете использовать эту команду.')
         return
+    await user.attack(interaction=interaction)
 
-    await user.attack(message=message)
-
-@bot.command('sleep')
-async def sleep(message):
-    user = get_user(user_id=message.author.id)
-
+@bot.tree.command(name='sleep', description='Покормите питомца!')
+async def register(interaction: discord.Interaction):
+    user = get_user(user_id=interaction.user.id)
     if not user:
-        await message.send('Вы не зарегистрированы, поэтому не можете использовать эту команду.')
+        await interaction.response.send_message('Вы не зарегистрированы, поэтому не можете использовать эту команду.')
         return
+    await user.sleep(interaction=interaction)
 
-    await user.sleep(message=message)
-
-@bot.command('shop')
-async def shop(message, item):
-    user = get_user(user_id=message.author.id)
-
+@bot.tree.command(name='shop', description='Покормите питомца!')
+async def register(interaction: discord.Interaction):
+    user = get_user(user_id=interaction.user.id)
     if not user:
-        await message.send('Вы не зарегистрированы, поэтому не можете использовать эту команду.')
+        await interaction.response.send_message('Вы не зарегистрированы, поэтому не можете использовать эту команду.')
         return
-
-    await user.shop(message=message)
+    await user.shop(interaction=interaction)
 
 bot.run('')
