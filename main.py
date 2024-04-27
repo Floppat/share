@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from users import User
-
+from config import token
 bot = commands.Bot(command_prefix='/', intents = discord.Intents.all())
 users_database = list()
 
@@ -89,4 +89,4 @@ async def shop(interaction: discord.Interaction, item: str):
         return
     await user.shop(interaction=interaction, item=item)
 
-bot.run('')
+bot.run(token)
